@@ -202,14 +202,19 @@ STYLE = """
 .agent-status-done     { font-size:0.82rem; color:#1BC47D; font-weight:600; }
 .agent-status-error    { font-size:0.82rem; color:#F24822; font-weight:600; }
 
-/* ── Buttons ── */
-.stButton > button {
+/* Hide Streamlit's 'Press Enter to apply / submit form' hint inside inputs */
+[data-testid="InputInstructions"] { display: none !important; }
+
+/* ── Buttons (st.button and st.form_submit_button) ── */
+.stButton > button, .stFormSubmitButton > button {
     border-radius: 6px; font-weight: 600;
 }
-.stButton > button[kind="primary"] {
-    background: #A259FF; border: none; color: #FFFFFF;
+.stButton > button[kind="primary"],
+.stFormSubmitButton > button {
+    background: #A259FF !important; border: none !important; color: #FFFFFF !important;
 }
-.stButton > button[kind="primary"]:hover { background: #8A3EE8; }
+.stButton > button[kind="primary"]:hover,
+.stFormSubmitButton > button:hover { background: #8A3EE8 !important; }
 
 div[data-testid="stExpander"] { border: 1px solid #E6E0FF; border-radius: 8px; }
 div[data-testid="stExpander"] a { color: #A259FF !important; text-decoration: underline; }
