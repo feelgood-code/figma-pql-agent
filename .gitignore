@@ -10,3 +10,4 @@ data/cached/
 streamlit.log
 *.log
 .streamlit/secrets.toml
+*.png
