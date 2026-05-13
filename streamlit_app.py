@@ -212,6 +212,16 @@ STYLE = """
 .stButton > button[kind="primary"]:hover { background: #8A3EE8; }
 
 div[data-testid="stExpander"] { border: 1px solid #E6E0FF; border-radius: 8px; }
+div[data-testid="stExpander"] a { color: #A259FF !important; text-decoration: underline; }
+div[data-testid="stExpander"] p,
+div[data-testid="stExpander"] li { color: #1E1E1E !important; }
+
+/* ── Output preview chips ── */
+.output-chip {
+    background: #F0EBFF; color: #6B2FD9;
+    font-size: 0.78rem; font-weight: 600;
+    padding: 4px 11px; border-radius: 14px;
+}
 </style>
 """
 st.markdown(STYLE, unsafe_allow_html=True)
@@ -588,8 +598,18 @@ def main() -> None:
             <div class="pql-wordmark">Figma RevOps</div>
             <div class="pql-title">PQL Intelligence Agent</div>
             <div class="pql-subtitle">
-                Enter a company and champion name. Five research agents run in parallel
-                and return a cited AE brief in ~60 seconds.
+                Enter the <strong>target company</strong> and your <strong>champion's full name</strong>
+                — e.g. head of design, VP Product, or any key contact at the account.<br>
+                Five AI research agents run in parallel on live web data and return a complete cited brief in ~60–90 seconds.
+            </div>
+            <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">
+                <span class="output-chip">🏢 Company snapshot</span>
+                <span class="output-chip">⚡ Why-now signals</span>
+                <span class="output-chip">🧑 Champion profile + email</span>
+                <span class="output-chip">👥 Buying committee</span>
+                <span class="output-chip">🔧 Tech stack</span>
+                <span class="output-chip">⚔️ Competitive risks</span>
+                <span class="output-chip">✉️ Outreach openers</span>
             </div>
         </div>""",
         unsafe_allow_html=True,
@@ -599,7 +619,7 @@ def main() -> None:
         render_brief(st.session_state["brief"])
         return
 
-    with st.container():
+    with st.form("search_form", clear_on_submit=False):
         c1, c2, c3 = st.columns([4, 4, 2])
         with c1:
             company = st.text_input("Company", placeholder="e.g. Vercel")
@@ -607,13 +627,12 @@ def main() -> None:
             champion = st.text_input("Champion / Key contact", placeholder="e.g. Lee Robinson")
         with c3:
             st.markdown("<br>", unsafe_allow_html=True)
-            run = st.button(
-                "Run →", type="primary",
-                disabled=not (company.strip() and champion.strip()),
-                use_container_width=True,
-            )
+            run = st.form_submit_button("Run →", type="primary", use_container_width=True)
 
     if not run:
+        return
+    if not company.strip() or not champion.strip():
+        st.warning("Please enter both a company name and champion name.")
         return
 
     company, champion = company.strip(), champion.strip()
@@ -660,7 +679,14 @@ def main() -> None:
             statuses[key] = "done"
     _refresh_agents()
 
-    with st.spinner("Synthesizing brief…"):
+    agent_ph.markdown(
+        '<div style="background:#F0EBFF;border-left:3px solid #A259FF;border-radius:8px;'
+        'padding:18px 22px;font-size:1rem;color:#1E1E1E;font-weight:500;">'
+        '⏳&nbsp; All research complete — preparing your AE brief...'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    with st.spinner("Preparing brief…"):
         brief = synthesis.synthesize(company, champion, outputs, start)
 
     cache.save(brief)
