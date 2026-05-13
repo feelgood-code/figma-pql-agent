@@ -17,7 +17,7 @@ def _get_exa() -> Exa:
 
 @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, min=1, max=5))
 def search(query: str, num_results: int = 8, category: str | None = None) -> list[dict]:
-    kwargs: dict = {"num_results": num_results, "text": {"max_characters": 1500}}
+    kwargs: dict = {"num_results": num_results, "text": {"max_characters": 3000}}
     if category:
         kwargs["category"] = category
     try:
@@ -25,9 +25,12 @@ def search(query: str, num_results: int = 8, category: str | None = None) -> lis
         out = []
         for r in results.results:
             if r.url:
-                out.append({"url": r.url, "title": r.title or r.url, "text": (r.text or "")[:1500]})
+                out.append({"url": r.url, "title": r.title or r.url, "text": (r.text or "")[:3000]})
         return out
-    except Exception:
+    except Exception as e:
+        msg = str(e)
+        if "402" in msg or "credits" in msg.lower():
+            raise RuntimeError(f"Exa credits exhausted — top up at dashboard.exa.ai. ({msg})") from e
         return []
 
 

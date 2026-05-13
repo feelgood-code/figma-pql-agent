@@ -79,15 +79,15 @@ async def run(company: str, champion: str, status_queue: asyncio.Queue | None) -
         await status_queue.put((AGENT_NAME, "searching"))
     try:
         sources = await asyncio.to_thread(multi_search, [
-            (f'"{champion}" "{company}" career LinkedIn profile', "people"),
-            (f'"{champion}" design product career history previous company', "people"),
-            (f'"{champion}" Figma design tools talk conference article', None),
-            (f'"{champion}" interview podcast blog post', None),
-            (f'"{champion}" email contact {company}', None),
-            (f'"{company}" head of design VP product "{champion}"', "company"),
-            (f'"{champion}" GitHub Twitter LinkedIn social', None),
-            (f'"{champion}" design systems design ops speaker', None),
-        ], 5)
+            (f'"{champion}" {company} career role title', None),
+            (f'"{champion}" site:linkedin.com OR site:twitter.com OR site:x.com', None),
+            (f'"{champion}" Figma design tools conference talk article blog', None),
+            (f'"{champion}" interview podcast design product engineering', None),
+            (f'"{champion}" {company} announcement hired promoted joined', "news"),
+            (f'"{champion}" design systems design ops developer experience', None),
+            (f'"{champion}" career history previous company background', None),
+            (f'"{champion}" site:github.com OR site:medium.com OR site:substack.com', None),
+        ], 6)
 
         prompt = load_prompt("champion_intel_v2").format(
             company=company,

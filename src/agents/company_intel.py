@@ -36,15 +36,15 @@ async def run(company: str, champion: str, status_queue: asyncio.Queue | None) -
         await status_queue.put((AGENT_NAME, "searching"))
     try:
         sources = await asyncio.to_thread(multi_search, [
+            (f"{company} company overview founded employees headquarters industry", "company"),
+            (f"site:crunchbase.com {company}", None),
             (f"{company} funding round valuation 2024 2025 2026", "news"),
-            (f"{company} company overview industry employees founded", "company"),
-            (f"{company} CEO CPO CTO leadership team executives", "company"),
-            (f"{company} product launch announcement strategy 2025 2026", "news"),
-            (f"{company} design team product organization growth", "news"),
-            (f"{company} customer case study enterprise", None),
-            (f"{company} revenue growth ARR headcount", "news"),
-            (f"{company} about company mission", "company"),
-        ], 5)
+            (f"{company} product launch announcement new feature 2025 2026", "news"),
+            (f"{company} revenue growth ARR headcount employees 2025", "news"),
+            (f"{company} about mission vision what we do", "company"),
+            (f"{company} enterprise customers case study", None),
+            (f"site:linkedin.com/company {company} overview employees", None),
+        ], 6)
 
         prompt = load_prompt("company_intel_v2").format(
             company=company,

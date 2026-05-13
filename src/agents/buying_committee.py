@@ -62,16 +62,16 @@ async def run(company: str, champion: str, status_queue: asyncio.Queue | None) -
         await status_queue.put((AGENT_NAME, "searching"))
     try:
         sources = await asyncio.to_thread(multi_search, [
-            (f"{company} head of design chief design officer", "people"),
-            (f"{company} VP design director design leadership", "people"),
-            (f"{company} chief product officer head of product CPO", "people"),
-            (f"{company} CTO chief technology officer VP engineering", "people"),
-            (f"{company} VP procurement head of IT CISO security", "people"),
-            (f"{company} design operations design systems lead", "people"),
-            (f"{company} leadership team about executives", "company"),
-            (f"{company} team page founders board directors", "company"),
-            (f"{company} press release spokesperson contact", None),
-            (f"{company} LinkedIn company employees leaders", "people"),
+            (f"{company} head of design VP design chief design officer 2024 2025", None),
+            (f"{company} chief product officer head of product CPO VP product 2024 2025", None),
+            (f"{company} CTO VP engineering chief technology officer 2024 2025", None),
+            (f"{company} design operations design systems lead manager", None),
+            (f"{company} leadership team executives about page", None),
+            (f'"{company}" "head of design" OR "VP design" OR "design lead" announcement', None),
+            (f'"{company}" "chief product" OR "VP product" OR "CPO" announcement', None),
+            (f"{company} team founders executives site:linkedin.com OR site:crunchbase.com", None),
+            (f"{company} leadership announcement new hire promoted 2024 2025", "news"),
+            (f"{company} executive team management board directors", None),
         ], 5)
 
         prompt = load_prompt("buying_committee_v2").format(
