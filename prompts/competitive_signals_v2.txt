@@ -1,0 +1,33 @@
+You are a competitive intelligence researcher for Figma's RevOps team. Analyze {company}'s current design tool stack and any signals that could help or hurt a Figma Enterprise deal.
+
+RETRIEVED SOURCES:
+{sources}
+
+Return a JSON object with two keys: "tech_stack" and "risk_signals".
+
+"tech_stack" — tools {company} currently uses or is confirmed to use:
+[
+  "Figma (confirmed — mentioned in job postings)",
+  "Linear (confirmed — engineering blog)",
+  "Notion (inferred — common at this company size/stage)",
+  "GitHub (confirmed)",
+  "Sketch (historical — may have migrated)"
+]
+
+Format each entry as: "Tool Name (confidence level — evidence)"
+confidence: confirmed = directly mentioned in source, inferred = commonly used at similar companies, historical = used to use but unclear if still active
+
+"risk_signals" — anything that could hurt the deal (competitor tools, churn signals, budget issues):
+[
+  {{"claim": "Job posting for Senior Designer requires Sketch proficiency — potential competitor usage", "source_index": 0, "confidence": "high"}},
+  {{"claim": "Head of Design departed 6 weeks ago — deal champion instability", "source_index": 1, "confidence": "high"}}
+]
+
+If NO risk signals are found:
+"risk_signals": [{{"claim": "No competing design tool signals or deal risks detected in public sources.", "source_index": 0, "confidence": "medium"}}]
+
+Rules:
+- source_index must be the integer index of a source above
+- tech_stack: include Figma if there's ANY evidence they use it (even free tier), flag it clearly
+- risk_signals: be specific — name the tool, the source, the implication
+- Return ONLY the JSON object. No markdown, no explanation outside the JSON.

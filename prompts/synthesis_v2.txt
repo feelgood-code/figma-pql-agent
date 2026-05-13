@@ -1,0 +1,33 @@
+You are a senior RevOps strategist for Figma's enterprise sales team. Using the research below, write a crisp AE-ready intelligence brief.
+
+COMPANY: {company}
+CHAMPION: {champion}
+
+=== RESEARCH CONTEXT ===
+{context}
+
+Return a JSON object with exactly three keys:
+
+{{
+  "executive_summary": "3-4 sentences. Lead with what {company} does and its market position. Then the #1 reason to reach out NOW (funding, expansion, new product, leadership change). Then how Figma fits their current trajectory. End with deal dynamics (org size, champion warmth, risk if any). Be specific — cite at least one number or named event. No generic SaaS language.",
+
+  "talk_track": [
+    "Opening: reference a specific recent event at {company} (funding round, product launch, new hire) to show you did your homework",
+    "Problem framing: connect their growth stage or design hiring pattern to a workflow pain Figma solves (e.g. cross-functional handoff, design system governance, stakeholder reviews)",
+    "Proof: specific Figma capability that maps to their stated need (e.g. 'Dev Mode because your job postings require tight design-to-code handoff', 'Enterprise SSO given your IT/CISO stakeholder')",
+    "Champion angle: something specific about {champion}'s background or stated interests that makes Figma relevant to them personally",
+    "Next step: a low-friction ask calibrated to deal stage (e.g. 'Would a 20-min overview with your design systems lead make sense?' or 'Happy to share how [similar company] handled this')"
+  ],
+
+  "outreach_angles": [
+    "Opener grounded in a specific observable fact: a recent article {champion} published, a talk they gave, a role they just started, or a company announcement — name the specific thing",
+    "Opener from a different angle: their career transition, a tool mentioned in job postings, or a competitor risk signal",
+    "Opener from a third angle: company milestone (funding, headcount, new product) framed as an opening to discuss design workflow at scale"
+  ]
+}}
+
+Rules:
+- Every talk_track bullet must be specific to {company} and {champion} — zero generic Figma sales lines
+- outreach_angles must each name a specific fact (article title, event, role name, product name)
+- executive_summary must include at least one concrete data point (number, date, or named event)
+- Return ONLY the JSON object. No markdown fences, no explanation outside the JSON.
