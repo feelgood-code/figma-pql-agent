@@ -17,6 +17,11 @@ def _parse_profile(data: dict, sources: list[dict]) -> ChampionProfile | None:
 
     # Resolve source_index for the profile's primary source
     idx = p.get("source_index", -1)
+    if isinstance(idx, str):
+        try:
+            idx = int(idx)
+        except (ValueError, TypeError):
+            idx = -1
     source_url = ""
     if isinstance(idx, int) and 0 <= idx < len(sources):
         src = sources[idx]
@@ -27,7 +32,7 @@ def _parse_profile(data: dict, sources: list[dict]) -> ChampionProfile | None:
             source_url = src.get("url", "")
 
     email = p.get("email") or None
-    if email and "@" not in email:
+    if email and "@" not in str(email):
         email = None
 
     email_conf = p.get("email_confidence", "unknown")
@@ -35,29 +40,48 @@ def _parse_profile(data: dict, sources: list[dict]) -> ChampionProfile | None:
         email_conf = "unknown"
 
     linkedin = p.get("linkedin_url") or None
-    if linkedin and "linkedin.com" not in linkedin.lower():
+    if linkedin and "linkedin.com" not in str(linkedin).lower():
         linkedin = None
 
     career = p.get("career_history", [])
     if not isinstance(career, list):
         career = []
+    career = [str(item) for item in career if item is not None]
+
     flags = p.get("high_signal_flags", [])
     if not isinstance(flags, list):
         flags = []
+    flags = [str(item) for item in flags if item is not None]
+
     activity = p.get("recent_activity", [])
     if not isinstance(activity, list):
         activity = []
+    activity = [str(item) for item in activity if item is not None]
+
+    prior = p.get("prior_tool_exposure")
+    if prior is not None and not isinstance(prior, str):
+        prior = str(prior) if prior else None
+
+    tenure = p.get("tenure_months")
+    if not isinstance(tenure, int):
+        if isinstance(tenure, str):
+            try:
+                tenure = int(tenure)
+            except (ValueError, TypeError):
+                tenure = None
+        else:
+            tenure = None
 
     try:
         return ChampionProfile(
-            name=p.get("name", ""),
-            title=p.get("title", ""),
+            name=str(p.get("name", "")),
+            title=str(p.get("title", "")),
             email=email,
             email_confidence=email_conf,
             linkedin_url=linkedin,
-            tenure_months=p.get("tenure_months") if isinstance(p.get("tenure_months"), int) else None,
+            tenure_months=tenure,
             career_history=career,
-            prior_tool_exposure=p.get("prior_tool_exposure"),
+            prior_tool_exposure=prior,
             high_signal_flags=flags,
             recent_activity=activity,
             source_url=source_url,
