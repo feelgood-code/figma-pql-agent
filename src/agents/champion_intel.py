@@ -30,22 +30,36 @@ def _parse_profile(data: dict, sources: list[dict]) -> ChampionProfile | None:
     if email and "@" not in email:
         email = None
 
+    email_conf = p.get("email_confidence", "unknown")
+    if email_conf not in ("verified", "inferred", "unknown"):
+        email_conf = "unknown"
+
     linkedin = p.get("linkedin_url") or None
     if linkedin and "linkedin.com" not in linkedin.lower():
         linkedin = None
+
+    career = p.get("career_history", [])
+    if not isinstance(career, list):
+        career = []
+    flags = p.get("high_signal_flags", [])
+    if not isinstance(flags, list):
+        flags = []
+    activity = p.get("recent_activity", [])
+    if not isinstance(activity, list):
+        activity = []
 
     try:
         return ChampionProfile(
             name=p.get("name", ""),
             title=p.get("title", ""),
             email=email,
-            email_confidence=p.get("email_confidence", "unknown"),
+            email_confidence=email_conf,
             linkedin_url=linkedin,
             tenure_months=p.get("tenure_months") if isinstance(p.get("tenure_months"), int) else None,
-            career_history=p.get("career_history", []),
+            career_history=career,
             prior_tool_exposure=p.get("prior_tool_exposure"),
-            high_signal_flags=p.get("high_signal_flags", []),
-            recent_activity=p.get("recent_activity", []),
+            high_signal_flags=flags,
+            recent_activity=activity,
             source_url=source_url,
         )
     except Exception:
