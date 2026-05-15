@@ -10,7 +10,14 @@ import streamlit as st
 nest_asyncio.apply()
 
 from src import cache, orchestrator, synthesis
-from src.models import AccountBrief, BuyingCommitteeMember, ChampionProfile, CompanySnapshot, Finding
+from src.models import AccountBrief, BuyingCommitteeMember, ChampionProfile, CompanySnapshot, Finding, PainPointQuote
+
+# Pre-warm Gemini client to avoid cold-start failure on first user request
+try:
+    from src.gemini_client import _get_client
+    _get_client()
+except Exception:
+    pass
 
 st.set_page_config(
     page_title="PQL Intelligence Agent — Figma",
@@ -227,6 +234,28 @@ div[data-testid="stExpander"] li { color: #1E1E1E !important; }
     font-size: 0.78rem; font-weight: 600;
     padding: 4px 11px; border-radius: 14px;
 }
+
+/* ── Pain point cards ── */
+.pain-card {
+    background: #FFFFFF; border: 1px solid #E6E0FF;
+    border-left: 3px solid #A259FF; border-radius: 8px; padding: 14px 18px; margin: 6px 0;
+}
+.pain-quote { font-size: 0.97rem; color: #1E1E1E; font-style: italic; line-height: 1.65; margin-bottom: 8px; }
+.pain-speaker { font-size: 0.8rem; color: #6B6B6B; font-weight: 600; margin-bottom: 8px; }
+.pain-capability {
+    display: inline-block; background: #F0EBFF; color: #6B2FD9;
+    font-size: 0.73rem; font-weight: 700; padding: 3px 10px; border-radius: 12px; margin-bottom: 8px;
+}
+.pain-opener {
+    font-size: 0.87rem; color: #1E1E1E; background: #F7F5FF;
+    padding: 8px 12px; border-radius: 6px; line-height: 1.55;
+}
+
+/* ── Sales motion card ── */
+.motion-card {
+    background: #1E1E1E; color: #FFFFFF; border-radius: 8px;
+    padding: 16px 20px; font-size: 0.93rem; line-height: 1.65; margin: 4px 0 8px;
+}
 </style>
 """
 st.markdown(STYLE, unsafe_allow_html=True)
@@ -239,6 +268,7 @@ AGENTS = [
     ("buying_committee",    "👥", "Committee"),
     ("competitive_signals", "⚔️", "Competitive"),
     ("hiring_growth",       "📈", "Growth"),
+    ("pain_point_mining",   "💬", "Pain Points"),
 ]
 
 DEAL_ROLE_CLASS = {
@@ -308,8 +338,12 @@ def _render_snapshot(snap: CompanySnapshot) -> None:
         cells.append(("Industry", snap.industry))
     if snap.stage:
         cells.append(("Stage", snap.stage))
+    if snap.segment:
+        cells.append(("Segment", snap.segment))
     if snap.employees:
         cells.append(("Employees", snap.employees))
+    if snap.revenue:
+        cells.append(("Revenue", snap.revenue))
     if snap.hq:
         cells.append(("HQ", snap.hq))
     if snap.founded:
@@ -535,6 +569,30 @@ def _render_outreach(talk_track: list[str], outreach_angles: list[str]) -> None:
             )
 
 
+def _render_pain_points(pain_quotes: list[PainPointQuote]) -> None:
+    if not pain_quotes:
+        return
+    st.markdown('<div class="section-label">Pain Points — In Their Own Words</div>', unsafe_allow_html=True)
+    for q in pain_quotes:
+        st.markdown(
+            f"""<div class="pain-card">
+                <div class="pain-quote">"{q.quote}"</div>
+                <div class="pain-speaker">— {q.speaker}</div>
+                <span class="pain-capability">Figma: {q.figma_capability}</span>
+                <div class="pain-opener"><strong>AE opener:</strong> {q.ae_opener}</div>
+                <div class="signal-source" style="margin-top:8px">{_src(q.source_url, q.source_title)}</div>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
+
+def _render_sales_motion(motion: str) -> None:
+    if not motion:
+        return
+    st.markdown('<div class="section-label">Suggested Sales Motion</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="motion-card">{motion}</div>', unsafe_allow_html=True)
+
+
 def _render_sources(brief: AccountBrief) -> None:
     seen: dict[str, str] = {}
     for f in brief.why_now + brief.hiring_findings + brief.risk_flags:
@@ -543,6 +601,9 @@ def _render_sources(brief: AccountBrief) -> None:
     for m in brief.buying_committee:
         if m.source_url and m.source_url not in seen:
             seen[m.source_url] = m.source_title
+    for q in brief.pain_quotes:
+        if q.source_url and q.source_url not in seen:
+            seen[q.source_url] = q.source_title
 
     if seen:
         st.markdown("")
@@ -558,6 +619,7 @@ def render_brief(brief: AccountBrief) -> None:
     if brief.company_snapshot:
         _render_snapshot(brief.company_snapshot)
 
+    _render_sales_motion(brief.sales_motion)
     _render_why_now(brief.why_now)
 
     if brief.champion_profile:
@@ -567,6 +629,7 @@ def render_brief(brief: AccountBrief) -> None:
     _render_tech_stack(brief.tech_stack)
     _render_risk_flags(brief.risk_flags)
     _render_hiring(brief.hiring_findings)
+    _render_pain_points(brief.pain_quotes)
     _render_outreach(brief.talk_track, brief.outreach_angles)
     _render_sources(brief)
 
@@ -668,7 +731,7 @@ def main() -> None:
                 statuses[key] = status
                 _refresh_agents()
                 done_count = sum(1 for s in statuses.values() if s in ("done", "error"))
-                progress.progress(min(done_count / 5, 1.0))
+                progress.progress(min(done_count / 6, 1.0))
         return await task
 
     # Mark all as searching at the start
@@ -676,7 +739,15 @@ def main() -> None:
         statuses[key] = "searching"
     _refresh_agents()
 
-    outputs = asyncio.run(_run())
+    try:
+        outputs = asyncio.run(_run())
+    except Exception as exc:
+        agent_ph.empty()
+        progress.empty()
+        st.error(f"Research agents encountered an error: {exc}. Please try again.")
+        if st.button("Retry →", type="primary", key="retry_btn"):
+            st.rerun()
+        return
 
     progress.progress(1.0)
     for key in statuses:

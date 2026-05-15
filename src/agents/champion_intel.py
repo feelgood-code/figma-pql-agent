@@ -19,7 +19,12 @@ def _parse_profile(data: dict, sources: list[dict]) -> ChampionProfile | None:
     idx = p.get("source_index", -1)
     source_url = ""
     if isinstance(idx, int) and 0 <= idx < len(sources):
-        source_url = sources[idx].get("url", "")
+        src = sources[idx]
+        source_text = (src.get("text", "") + " " + src.get("title", "")).lower()
+        name_parts = [part for part in p.get("name", "").lower().split() if len(part) > 2]
+        # Only use source URL if person's name actually appears in the source
+        if not name_parts or any(part in source_text for part in name_parts):
+            source_url = src.get("url", "")
 
     email = p.get("email") or None
     if email and "@" not in email:

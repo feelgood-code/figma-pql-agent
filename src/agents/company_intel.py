@@ -20,6 +20,8 @@ def _parse_snapshot(data: dict) -> CompanySnapshot | None:
             industry=s.get("industry", ""),
             stage=s.get("stage", ""),
             employees=s.get("employees", ""),
+            segment=s.get("segment"),
+            revenue=s.get("revenue"),
             hq=s.get("hq"),
             founded=s.get("founded"),
             total_funding=s.get("total_funding"),
@@ -46,7 +48,7 @@ async def run(company: str, champion: str, status_queue: asyncio.Queue | None) -
             (f"site:linkedin.com/company {company} overview employees", None),
         ], 6)
 
-        prompt = load_prompt("company_intel_v2").format(
+        prompt = load_prompt("company_intel_v3").format(
             company=company,
             sources=format_sources_for_prompt(sources),
         )

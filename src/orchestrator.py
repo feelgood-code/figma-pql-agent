@@ -8,6 +8,7 @@ from src.agents import (
     company_intel,
     competitive_signals,
     hiring_growth,
+    pain_point_mining,
 )
 from src.models import SubAgentOutput
 
@@ -23,6 +24,7 @@ async def run_all_agents(
         buying_committee.run(company, champion, status_queue),
         competitive_signals.run(company, champion, status_queue),
         hiring_growth.run(company, champion, status_queue),
+        pain_point_mining.run(company, champion, status_queue),
         return_exceptions=True,
     )
 

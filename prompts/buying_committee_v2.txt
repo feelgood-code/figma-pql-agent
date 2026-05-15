@@ -40,6 +40,7 @@ Email rules:
 
 Rules:
 - source_index must be the integer index of a source above (0-based)
+- source_index must point to a source that explicitly names the person — do not assign a source_index where the person is not mentioned by name in the source title or text
 - Only include REAL people you can verify from the sources — no invented contacts
 - Include LinkedIn URL only if found in sources
 - Return ONLY the JSON object. No markdown, no explanation outside the JSON.

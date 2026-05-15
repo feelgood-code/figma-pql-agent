@@ -26,6 +26,12 @@ def _parse_members(data: dict, sources: list[dict]) -> list[BuyingCommitteeMembe
         if not url:
             continue
 
+        # Anti-hallucination: verify person's name appears in the cited source
+        source_text = (src.get("text", "") + " " + src.get("title", "")).lower()
+        name_parts = [p for p in item.get("name", "").lower().split() if len(p) > 2]
+        if name_parts and not any(part in source_text for part in name_parts):
+            continue
+
         deal_role = item.get("deal_role", "unknown")
         if deal_role not in ("champion", "economic buyer", "technical evaluator", "blocker", "unknown"):
             deal_role = "unknown"

@@ -13,6 +13,7 @@ from src.models import (
     ChampionProfile,
     CompanySnapshot,
     Finding,
+    PainPointQuote,
     SubAgentOutput,
 )
 
@@ -112,6 +113,27 @@ def _sort_findings(findings: list[Finding]) -> list[Finding]:
     return sorted(findings, key=lambda f: order.get(f.confidence, 3))
 
 
+def _sales_motion(segment: str | None) -> str:
+    if not segment:
+        return ""
+    s = segment.lower()
+    if "enterprise" in s:
+        return (
+            "Strategic AE motion — multi-thread at CPO + Head of Design level. "
+            "Find mutual connections between Figma's network and theirs. "
+            "Consider Figma exec sponsor or Champions call. Lead with security/SSO story for IT."
+        )
+    if "mid-market" in s or "mid market" in s:
+        return (
+            "AE-led, champion-centric — drive through Head of Design or VP Product. "
+            "Lead with reference customer at similar stage. ROI case study and trial."
+        )
+    return (
+        "PLG / email outreach — self-serve Figma trial, nurture through design content. "
+        "Direct email to founder or design lead. Low-touch, high-velocity motion."
+    )
+
+
 def synthesize(company: str, champion: str, outputs: list[SubAgentOutput], start_time: float) -> AccountBrief:
     # Extract rich structured outputs from each agent
     company_out = _agent(outputs, "company_intel")
@@ -119,15 +141,19 @@ def synthesize(company: str, champion: str, outputs: list[SubAgentOutput], start
     committee_out = _agent(outputs, "buying_committee")
     competitive_out = _agent(outputs, "competitive_signals")
     hiring_out = _agent(outputs, "hiring_growth")
+    pain_out = _agent(outputs, "pain_point_mining")
 
     snapshot: CompanySnapshot | None = company_out.company_snapshot if company_out else None
     profile: ChampionProfile | None = champion_out.champion_profile if champion_out else None
     committee: list[BuyingCommitteeMember] = committee_out.committee_members if committee_out else []
     tech_stack: list[str] = competitive_out.tech_stack if competitive_out else []
+    pain_quotes: list[PainPointQuote] = pain_out.pain_quotes if pain_out else []
 
     why_now = _sort_findings(company_out.findings if company_out else [])[:5]
     hiring_findings = _sort_findings(hiring_out.findings if hiring_out else [])[:5]
     risk_flags = _sort_findings(competitive_out.findings if competitive_out else [])[:4]
+
+    motion = _sales_motion(snapshot.segment if snapshot else None)
 
     context = _build_context(
         company, champion, snapshot, profile, committee, tech_stack,
@@ -163,6 +189,8 @@ def synthesize(company: str, champion: str, outputs: list[SubAgentOutput], start
         risk_flags=risk_flags,
         talk_track=[str(t) for t in talk_track[:5] if t],
         outreach_angles=[str(a) for a in outreach_angles[:3] if a],
+        pain_quotes=pain_quotes[:5],
+        sales_motion=motion,
         generated_at=datetime.now(timezone.utc),
         generation_seconds=round(time.time() - start_time, 1),
     )

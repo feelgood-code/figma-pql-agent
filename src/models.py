@@ -31,11 +31,22 @@ class BuyingCommitteeMember(BaseModel):
     source_title: str
 
 
+class PainPointQuote(BaseModel):
+    quote: str
+    speaker: str
+    source_url: str
+    source_title: str
+    figma_capability: str
+    ae_opener: str
+
+
 class CompanySnapshot(BaseModel):
     description: str
     industry: str = ""
     stage: str = ""
     employees: str = ""
+    segment: str | None = None      # "Enterprise (1000+)", "Mid-Market (100-999)", "SMB (<100)"
+    revenue: str | None = None      # "$50M ARR" if found in sources
     hq: str | None = None
     founded: str | None = None
     total_funding: str | None = None
@@ -63,11 +74,11 @@ class SubAgentOutput(BaseModel):
     findings: list[Finding] = []
     summary: str = ""
     error: str | None = None
-    # Rich structured outputs (replaces __dict__ hack)
     committee_members: list[BuyingCommitteeMember] = []
     champion_profile: ChampionProfile | None = None
     company_snapshot: CompanySnapshot | None = None
     tech_stack: list[str] = []
+    pain_quotes: list[PainPointQuote] = []
 
 
 class AccountBrief(BaseModel):
@@ -83,5 +94,7 @@ class AccountBrief(BaseModel):
     risk_flags: list[Finding]
     talk_track: list[str]
     outreach_angles: list[str] = []
+    pain_quotes: list[PainPointQuote] = []
+    sales_motion: str = ""
     generated_at: datetime
     generation_seconds: float
