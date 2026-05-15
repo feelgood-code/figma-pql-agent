@@ -137,11 +137,18 @@ async def run(company: str, champion: str, status_queue: asyncio.Queue | None) -
             champion=champion,
             sources=format_sources_for_prompt(sources),
         )
-        text = await asyncio.to_thread(call_gemini, prompt)
+        text = await asyncio.to_thread(call_gemini, prompt, 8192)
         data = parse_rich_json(text)
 
         profile = _parse_profile(data, sources)
         signals = _parse_signals(data, sources)
+
+        # Fallback: ensure champion section always renders with at least a name
+        if profile is None and champion:
+            try:
+                profile = ChampionProfile(name=champion, title="")
+            except Exception:
+                pass
 
         if status_queue:
             await status_queue.put((AGENT_NAME, "done"))

@@ -17,13 +17,13 @@ def _get_client() -> genai.Client:
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-def call_gemini(prompt: str) -> str:
+def call_gemini(prompt: str, max_output_tokens: int = 4096) -> str:
     response = _get_client().models.generate_content(
         model=GEMINI_MODEL,
         contents=prompt,
         config=types.GenerateContentConfig(
             temperature=0.2,
-            max_output_tokens=4096,
+            max_output_tokens=max_output_tokens,
         ),
     )
     return response.text or ""

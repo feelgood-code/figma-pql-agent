@@ -41,4 +41,5 @@ Rules:
 - career_history: reverse-chronological, include dates where found in sources
 - high_signal_flags: only include flags with direct evidence from sources
 - email: if company domain is visible in sources, infer firstname@domain.com and set email_confidence to "inferred"
+- signals: return at most 5 signals — prioritise the highest-confidence ones
 - Return ONLY the JSON object. No markdown, no explanation outside the JSON.
