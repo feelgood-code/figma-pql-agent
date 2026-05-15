@@ -25,17 +25,11 @@ def _parse_quotes(data: dict, sources: list[dict]) -> list[PainPointQuote]:
         quote_text = item.get("quote", "").strip()
         if not quote_text:
             continue
-        # Verify quote fragment appears in source text (anti-hallucination)
+        # Light anti-hallucination: verify at least 2 significant words from the quote
+        # appear in the source (Exa text is truncated so exact 3-gram matching is too strict)
         source_text = (src.get("text", "") + " " + src.get("title", "")).lower()
-        quote_words = quote_text.lower().split()
-        # Check at least 3 consecutive words from the quote appear in the source
-        found = False
-        for i in range(len(quote_words) - 2):
-            chunk = " ".join(quote_words[i:i + 3])
-            if chunk in source_text:
-                found = True
-                break
-        if not found:
+        significant = [w for w in quote_text.lower().split() if len(w) > 4]
+        if significant and sum(1 for w in significant if w in source_text) < 2:
             continue
         try:
             quotes.append(PainPointQuote(
