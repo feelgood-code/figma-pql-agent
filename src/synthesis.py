@@ -165,8 +165,11 @@ def synthesize(company: str, champion: str, outputs: list[SubAgentOutput], start
         champion=champion,
         context=context,
     )
-    text = call_gemini(prompt)
+    text = call_gemini(prompt, 8192)
     data = _parse_json(text)
+    if not data:
+        text = call_gemini(prompt, 8192)
+        data = _parse_json(text)
 
     talk_track = data.get("talk_track", [])
     if not isinstance(talk_track, list):
