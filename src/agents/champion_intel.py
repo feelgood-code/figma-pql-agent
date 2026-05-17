@@ -74,8 +74,8 @@ def _parse_profile(data: dict, sources: list[dict]) -> ChampionProfile | None:
 
     try:
         return ChampionProfile(
-            name=str(p.get("name", "")),
-            title=str(p.get("title", "")),
+            name=str(p.get("name") or ""),
+            title=str(p.get("title") or ""),
             email=email,
             email_confidence=email_conf,
             linkedin_url=linkedin,
