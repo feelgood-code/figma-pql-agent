@@ -137,7 +137,7 @@ async def run(company: str, champion: str, status_queue: asyncio.Queue | None) -
             champion=champion,
             sources=format_sources_for_prompt(sources),
         )
-        text = await asyncio.to_thread(call_gemini, prompt, 8192)
+        text = await asyncio.to_thread(call_gemini, prompt)
         data = parse_rich_json(text)
 
         profile = _parse_profile(data, sources)
