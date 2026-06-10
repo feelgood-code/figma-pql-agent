@@ -1,5 +1,5 @@
 streamlit>=1.40
-google-genai>=1.0
+openai>=1.0
 exa-py>=1.2
 pydantic>=2.8
 python-dotenv>=1.0
