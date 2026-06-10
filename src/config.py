@@ -5,9 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 EXA_API_KEY = os.getenv("EXA_API_KEY", "")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.4-mini")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-pro-preview")
 DEMO_MODE = os.getenv("DEMO_MODE", "live")
 
 ROOT_DIR = Path(__file__).parent.parent
